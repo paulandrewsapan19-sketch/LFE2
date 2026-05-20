@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import Header from './components/Header';
-import Nav from './components/Nav';
+import Header from './components/header';
+import Nav from './components/nav';
 import HeroSection from './components/HeroSection';
 import FeatureCard from './components/FeatureCard';
 import FeaturedSpots from './components/FeaturedSpots';
 import SpotList from './components/SpotList';
-import Alert from './components/Alert';
-import Button from './components/Button';
-import Footer from './components/Footer';
+import Alert from './components/alert';
+import Button from './components/button';
+import Footer from './components/footer';
 import { Spot, Feature } from './types';
 
 // Typed data arrays using our shared interfaces

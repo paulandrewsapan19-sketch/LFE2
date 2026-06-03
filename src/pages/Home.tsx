@@ -1,11 +1,10 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import FeatureCard from '../components/FeatureCard';
-import HeroSection from '../components/HeroSection';
 import Alert from '../components/alert';
 import Button from '../components/button';
 import FeaturedSpots from '../components/FeaturedSpots';
 import SpotList from '../components/SpotList';
-import { useState } from 'react';
 import { Spot, Feature } from '../types';
 
 const features: Feature[] = [
@@ -41,7 +40,21 @@ function Home() {
                 />
             </div>
 
-            <HeroSection />
+            <section className="hero">
+                <div className="hero-text">
+                    <h1>Welcome to Roamr</h1>
+                    <p>Your social platform for discovering and sharing amazing places around the world. Find hidden gems, create trip collections, and connect with fellow travelers.</p>
+                    <Link to="/spots" className="btn-primary">Explore Spots</Link>
+                </div>
+
+                <div className="hero-image-wrapper">
+                    <img
+                        src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800"
+                        alt="Traveler looking out over a scenic mountain lake"
+                        className="hero-image"
+                    />
+                </div>
+            </section>
 
             <section className="features">
                 {features.map((feature) => (

@@ -1,19 +1,43 @@
-import { useState } from 'react';
-import { Spot } from '../types';
+import { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
+import axios from 'axios';
 
-const allSpots: Spot[] = [
-    { id: 1, name: 'Lanikai Beach', location: 'Kailua, Hawaii, USA', badge: 'Trending', description: 'A stunning stretch of white sand with calm turquoise waters, perfect for kayaking and sunrise views.' },
-    { id: 2, name: 'Hallstatt Village', location: 'Salzkammergut, Austria', badge: 'Top Rated', description: 'A picturesque lakeside village nestled between mountains with charming alpine architecture.' },
-    { id: 3, name: 'Antelope Canyon', location: 'Page, Arizona, USA', badge: 'Must See', description: 'A breathtaking slot canyon with flowing sandstone walls and beams of light filtering from above.' },
-    { id: 4, name: 'Cinque Terre', location: 'Liguria, Italy', badge: 'Popular', description: 'Five colorful cliffside villages connected by scenic hiking trails overlooking the Mediterranean Sea.' },
-    { id: 5, name: 'Ha Long Bay', location: 'Quang Ninh, Vietnam', badge: 'UNESCO', description: 'Thousands of limestone islands rising from emerald waters in this UNESCO World Heritage Site.' },
-    { id: 6, name: 'Salar de Uyuni', location: 'Potosi, Bolivia', badge: 'Hidden Gem', description: 'The world largest salt flat creates a mirror-like reflection of the sky producing surreal photographs.' },
-];
+interface Spot {
+    _id: string;
+    name: string;
+    location: string;
+    description: string;
+    photo_url?: string;
+}
 
 function Spots() {
+    const [spots, setSpots] = useState<Spot[]>([]);
     const [search, setSearch] = useState<string>('');
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string>('');
 
-    const filteredSpots = allSpots.filter((spot) =>
+    const { token } = useAuth();
+
+    useEffect(() => {
+        const fetchSpots = async () => {
+            try {
+                const response = await axios.get('http://localhost:3000/api/spots', {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+                setSpots(response.data.data);
+            } catch (err: any) {
+                setError('Failed to load spots. Please try again.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchSpots();
+    }, [token]);
+
+    const filteredSpots = spots.filter((spot) =>
         spot.name.toLowerCase().includes(search.toLowerCase()) ||
         spot.location.toLowerCase().includes(search.toLowerCase())
     );
@@ -32,16 +56,24 @@ function Spots() {
                 />
             </section>
 
+            {/* Loading state */}
+            {loading && <p style={{ textAlign: 'center' }}>Loading spots...</p>}
+
+            {/* Error state */}
+            {error && <p style={{ textAlign: 'center', color: 'red' }}>{error}</p>}
+
             <section className="spots-grid">
-                {filteredSpots.length === 0 ? (
-                    <p>No spots found matching your search.</p>
+                {!loading && filteredSpots.length === 0 ? (
+                    <p>No spots found.</p>
                 ) : (
                     filteredSpots.map((spot) => (
-                        <div key={spot.id} className="card spot-card">
-                            <span className="badge">{spot.badge}</span>
+                        <div key={spot._id} className="card spot-card">
                             <h2>{spot.name}</h2>
                             <p className="spot-location">{spot.location}</p>
                             <p>{spot.description}</p>
+                            {spot.photo_url && (
+                                <img src={spot.photo_url} alt={spot.name} />
+                            )}
                         </div>
                     ))
                 )}

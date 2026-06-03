@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../context/ AuthContext';
+import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 
 function Register() {
@@ -26,7 +26,7 @@ function Register() {
                 email,
                 password
             });
-            login(response.data.token);
+            login(response.data.token, response.data.user.name);
             navigate('/');
         } catch (err: any) {
             setError(err.response?.data?.error || 'Registration failed. Please try again.');

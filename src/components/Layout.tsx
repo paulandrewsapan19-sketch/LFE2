@@ -1,8 +1,8 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/ AuthContext';
+import { useAuth } from '../context/AuthContext';
 
 function Layout() {
-    const { isLoggedIn, logout } = useAuth();
+    const { isLoggedIn, logout, userName } = useAuth();
     const navigate = useNavigate();
 
     const handleLogout = () => {
@@ -13,8 +13,20 @@ function Layout() {
     return (
         <>
             <header>
-                <div className="logo">Roamr</div>
-                <p className="tagline">Discover. Share. Explore.</p>
+                <div className="header-content">
+                    <div className="header-left">
+                        <div className="logo">Roamr</div>
+                        <p className="tagline">Discover. Share. Explore.</p>
+                    </div>
+                    {isLoggedIn && (
+                        <div className="header-user">
+                            <span className="header-username">👤 {userName || 'Roamr User'}</span>
+                            <button onClick={handleLogout} className="header-logout-btn">
+                                Logout
+                            </button>
+                        </div>
+                    )}
+                </div>
             </header>
 
             <nav>
@@ -27,22 +39,6 @@ function Layout() {
                 <NavLink to="/trips" className={({ isActive }) => isActive ? 'active' : ''}>
                     Trips
                 </NavLink>
-
-                {/* Conditional rendering based on login state */}
-                {isLoggedIn ? (
-                    <button onClick={handleLogout} className="nav-btn">
-                        Logout
-                    </button>
-                ) : (
-                    <>
-                        <NavLink to="/login" className={({ isActive }) => isActive ? 'active' : ''}>
-                            Login
-                        </NavLink>
-                        <NavLink to="/register" className={({ isActive }) => isActive ? 'active' : ''}>
-                            Register
-                        </NavLink>
-                    </>
-                )}
             </nav>
 
             <Outlet />

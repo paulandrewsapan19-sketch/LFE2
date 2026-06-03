@@ -3,7 +3,9 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/ AuthContext';
 import axios from 'axios';
 
-function Login() {
+function Register() {
+    const [name, setName] = useState<string>('');
+    const [username, setUsername] = useState<string>('');
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [error, setError] = useState<string>('');
@@ -18,14 +20,16 @@ function Login() {
         setLoading(true);
 
         try {
-            const response = await axios.post('http://localhost:3000/api/auth/login', {
+            const response = await axios.post('http://localhost:3000/api/auth/register', {
+                name,
+                username,
                 email,
                 password
             });
             login(response.data.token);
             navigate('/');
         } catch (err: any) {
-            setError(err.response?.data?.error || 'Login failed. Please try again.');
+            setError(err.response?.data?.error || 'Registration failed. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -35,12 +39,32 @@ function Login() {
         <main>
             <section className="auth-page">
                 <div className="auth-card">
-                    <h1>Login</h1>
-                    <p>Welcome back to Roamr!</p>
+                    <h1>Create Account</h1>
+                    <p>Join Roamr and start sharing your favorite spots!</p>
 
                     {error && <div className="auth-error">{error}</div>}
 
                     <form onSubmit={handleSubmit}>
+                        <div className="form-group">
+                            <label>Name</label>
+                            <input
+                                type="text"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                placeholder="Enter your name"
+                                required
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Username</label>
+                            <input
+                                type="text"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
+                                placeholder="Choose a username"
+                                required
+                            />
+                        </div>
                         <div className="form-group">
                             <label>Email</label>
                             <input
@@ -57,17 +81,17 @@ function Login() {
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                placeholder="Enter your password"
+                                placeholder="Choose a password"
                                 required
                             />
                         </div>
                         <button type="submit" className="btn-primary" disabled={loading}>
-                            {loading ? 'Logging in...' : 'Login'}
+                            {loading ? 'Creating account...' : 'Register'}
                         </button>
                     </form>
 
                     <p className="auth-switch">
-                        Don't have an account? <Link to="/register">Register</Link>
+                        Already have an account? <Link to="/login">Login</Link>
                     </p>
                 </div>
             </section>
@@ -75,4 +99,4 @@ function Login() {
     );
 }
 
-export default Login;
+export default Register;

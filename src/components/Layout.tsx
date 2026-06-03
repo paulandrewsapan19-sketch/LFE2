@@ -1,6 +1,15 @@
-import { Outlet, NavLink } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/ AuthContext';
 
 function Layout() {
+    const { isLoggedIn, logout } = useAuth();
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        logout();
+        navigate('/login');
+    };
+
     return (
         <>
             <header>
@@ -18,6 +27,22 @@ function Layout() {
                 <NavLink to="/trips" className={({ isActive }) => isActive ? 'active' : ''}>
                     Trips
                 </NavLink>
+
+                {/* Conditional rendering based on login state */}
+                {isLoggedIn ? (
+                    <button onClick={handleLogout} className="nav-btn">
+                        Logout
+                    </button>
+                ) : (
+                    <>
+                        <NavLink to="/login" className={({ isActive }) => isActive ? 'active' : ''}>
+                            Login
+                        </NavLink>
+                        <NavLink to="/register" className={({ isActive }) => isActive ? 'active' : ''}>
+                            Register
+                        </NavLink>
+                    </>
+                )}
             </nav>
 
             <Outlet />

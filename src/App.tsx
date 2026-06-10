@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Layout from './components/Layout';
+import ProtectedRoute from './components/ProtectedRoute';
 import Home from './pages/Home';
 import Spots from './pages/Spots';
 import Trips from './pages/Trips';
@@ -13,12 +14,23 @@ function App() {
         <AuthProvider>
             <BrowserRouter>
                 <Routes>
+                    {/* Auth pages - no layout */}
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+
+                    {/* Main pages - with layout */}
                     <Route path="/" element={<Layout />}>
                         <Route index element={<Home />} />
-                        <Route path="spots" element={<Spots />} />
-                        <Route path="trips" element={<Trips />} />
-                        <Route path="login" element={<Login />} />
-                        <Route path="register" element={<Register />} />
+                        <Route path="spots" element={
+                            <ProtectedRoute>
+                                <Spots />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="trips" element={
+                            <ProtectedRoute>
+                                <Trips />
+                            </ProtectedRoute>
+                        } />
                         <Route path="*" element={<NotFound />} />
                     </Route>
                 </Routes>

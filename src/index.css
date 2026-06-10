@@ -322,3 +322,22 @@ search-input {
     background-color: var(--color-accent);
     color: white;
 }
+
+/* ── Delete Button ─────────────────────────── */
+.delete-btn {
+    display: inline-block;
+    background-color: #dc2626;
+    color: white;
+    border: none;
+    padding: 0.4rem 1rem;
+    border-radius: var(--radius);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 0.75rem;
+    transition: background-color var(--transition);
+}
+
+.delete-btn:hover {
+    background-color: #b91c1c;
+}

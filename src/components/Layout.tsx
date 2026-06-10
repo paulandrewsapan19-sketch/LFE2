@@ -18,14 +18,25 @@ function Layout() {
                         <div className="logo">Roamr</div>
                         <p className="tagline">Discover. Share. Explore.</p>
                     </div>
-                    {isLoggedIn && (
-                        <div className="header-user">
-                            <span className="header-username">👤 {userName || 'Roamr User'}</span>
-                            <button onClick={handleLogout} className="header-logout-btn">
-                                Logout
-                            </button>
-                        </div>
-                    )}
+                    <div className="header-user">
+                        {isLoggedIn ? (
+                            <>
+                                <span className="header-username">👤 {userName || 'Roamr User'}</span>
+                                <button onClick={handleLogout} className="header-logout-btn">
+                                    Logout
+                                </button>
+                            </>
+                        ) : (
+                            <div style={{ display: 'flex', gap: '0.75rem' }}>
+                                <NavLink to="/login" className="header-logout-btn">
+                                    Login
+                                </NavLink>
+                                <NavLink to="/register" className="header-logout-btn">
+                                    Register
+                                </NavLink>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </header>
 

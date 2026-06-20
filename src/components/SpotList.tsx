@@ -18,12 +18,12 @@ function SpotList({ spots, onSpotSelect }: SpotListProps) {
     return (
         // Fragment - no extra DOM node
         <>
-            <ul className="list-group">
+            <ul className="spot-list">
                 {/* Rendering list with .map() */}
                 {spots.map((spot, index) => (
                     <li
                         key={spot.id}
-                        className={'list-group-item ' + (selectedIndex === index ? 'active' : '')}
+                        className={'spot-list-item' + (selectedIndex === index ? ' spot-list-item-active' : '')}
                         onClick={() => {
                             setSelectedIndex(index);
                             // Lifting state up to parent via function prop
@@ -37,7 +37,7 @@ function SpotList({ spots, onSpotSelect }: SpotListProps) {
 
             {/* Conditional rendering with && operator */}
             {selectedIndex >= 0 &&
-                <p style={{ color: 'var(--color-primary)', fontWeight: 600, marginTop: '0.75rem' }}>
+                <p className="featured-location">
                     You selected: {spots[selectedIndex].name}
                 </p>
             }

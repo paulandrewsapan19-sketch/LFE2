@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import FeatureCard from '../components/FeatureCard';
-import Alert from '../components/alert';
-import Button from '../components/button';
 import FeaturedSpots from '../components/FeaturedSpots';
 import SpotList from '../components/SpotList';
 import { Spot, Feature } from '../types';
@@ -27,17 +25,16 @@ function Home() {
 
     return (
         <main>
-            {showAlert &&
-                <Alert>
+            {showAlert && (
+                <div className="welcome-alert">
                     Welcome to Roamr! Discover and share your favorite travel spots.
-                </Alert>
-            }
-            <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
-                <Button
-                    label={showAlert ? 'Hide Welcome Message' : 'Show Welcome Message'}
-                    onClick={() => setShowAlert(!showAlert)}
-                    color="btn-outline-secondary"
-                />
+                    <button className="welcome-alert-close" onClick={() => setShowAlert(false)}>&times;</button>
+                </div>
+            )}
+            <div className="view-all-wrapper">
+                <button className="btn-outline" onClick={() => setShowAlert(!showAlert)}>
+                    {showAlert ? 'Hide Welcome Message' : 'Show Welcome Message'}
+                </button>
             </div>
 
             <section className="hero">
@@ -68,16 +65,16 @@ function Home() {
 
             <FeaturedSpots spots={spots} />
 
-            <section style={{ marginTop: '3rem' }}>
+            <section className="featured-spots">
                 <h2 className="section-title">All Spots</h2>
                 <SpotList
                     spots={spots}
                     onSpotSelect={(spot: Spot) => setSelectedSpot(spot)}
                 />
                 {selectedSpot &&
-                    <div className="card" style={{ marginTop: '1rem' }}>
+                    <div className="card" style={{ marginTop: '1.5rem' }}>
                         <h3>{selectedSpot.name}</h3>
-                        <p style={{ color: 'var(--color-primary)', fontWeight: 600 }}>{selectedSpot.location}</p>
+                        <p className="featured-location">{selectedSpot.location}</p>
                         <p>{selectedSpot.description}</p>
                     </div>
                 }

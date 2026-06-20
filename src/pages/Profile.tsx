@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 
@@ -36,8 +36,10 @@ function Profile() {
     const [formError, setFormError] = useState<string>('');
     const [formSuccess, setFormSuccess] = useState<string>('');
     const [formLoading, setFormLoading] = useState<boolean>(false);
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-    const { token } = useAuth();
+    const { token, logout } = useAuth();
+    const navigate = useNavigate();
 
     const fetchData = async () => {
         try {
@@ -76,7 +78,20 @@ function Profile() {
         e.preventDefault();
         setFormError('');
         setFormSuccess('');
+        setFieldErrors({});
         setFormLoading(true);
+
+        const errors: Record<string, string> = {};
+        if (!name.trim()) errors.name = 'Name is required';
+        if (!username.trim()) errors.username = 'Username is required';
+        if (!email.trim()) errors.email = 'Email is required';
+        if (!currentPassword) errors.currentPassword = 'Current password is required';
+        if (newPassword && newPassword.length < 6) errors.newPassword = 'Must be at least 6 characters';
+        if (Object.keys(errors).length > 0) {
+            setFieldErrors(errors);
+            setFormLoading(false);
+            return;
+        }
 
         try {
             const payload: any = { name, username, email, bio, current_password: currentPassword };
@@ -90,11 +105,27 @@ function Profile() {
             setFormSuccess('Profile updated successfully!');
             setCurrentPassword('');
             setNewPassword('');
-            setEditMode(false);
+            setTimeout(() => {
+                setEditMode(false);
+                setFormSuccess('');
+            }, 2000);
         } catch (err: any) {
             setFormError(err.response?.data?.error || 'Failed to update profile.');
         } finally {
             setFormLoading(false);
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) return;
+        try {
+            await axios.delete('http://localhost:3000/api/users/me', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            logout();
+            navigate('/');
+        } catch (err: any) {
+            setFormError(err.response?.data?.error || 'Failed to delete account.');
         }
     };
 
@@ -109,8 +140,8 @@ function Profile() {
     return (
         <main>
             {/* Profile header - avatar, name, stats */}
-            <div className="insta-profile-header">
-                <div className="insta-profile-avatar-lg">
+            <div className="profile-header">
+                <div className="profile-avatar-lg">
                     {user.name.charAt(0).toUpperCase()}
                 </div>
                 <div>
@@ -119,8 +150,8 @@ function Profile() {
                     {user.bio && <p style={{ margin: '0.4rem 0' }}>{user.bio}</p>}
                     {user.role === 'admin' && <span className="badge">Admin</span>}
 
-                    <div className="insta-profile-stats">
-                        <div className="insta-profile-stat">
+                    <div className="profile-stats">
+                        <div className="profile-stat">
                             <strong>{mySpots.length}</strong>
                             <span>Spots</span>
                         </div>
@@ -134,10 +165,11 @@ function Profile() {
 
             {/* Edit account form */}
             {editMode && (
-                <div className="card" style={{ maxWidth: '500px', margin: '0 auto 2rem' }}>
+                <div className="edit-profile-card">
+                    <h3>Edit Profile</h3>
                     {formError && <div className="auth-error">{formError}</div>}
                     {formSuccess && (
-                        <div style={{ backgroundColor: '#dcfce7', color: '#16a34a', padding: '0.75rem 1rem', borderRadius: 'var(--radius)', marginBottom: '1.25rem', fontSize: '0.9rem' }}>
+                        <div className="form-success">
                             {formSuccess}
                         </div>
                     )}
@@ -145,14 +177,17 @@ function Profile() {
                         <div className="form-group">
                             <label>Name</label>
                             <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
+                            {fieldErrors.name && <span className="field-error">{fieldErrors.name}</span>}
                         </div>
                         <div className="form-group">
                             <label>Username</label>
                             <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} required />
+                            {fieldErrors.username && <span className="field-error">{fieldErrors.username}</span>}
                         </div>
                         <div className="form-group">
                             <label>Email</label>
                             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                            {fieldErrors.email && <span className="field-error">{fieldErrors.email}</span>}
                         </div>
                         <div className="form-group">
                             <label>Bio</label>
@@ -161,15 +196,19 @@ function Profile() {
                         <div className="form-group">
                             <label>New Password (leave blank to keep current)</label>
                             <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+                            {fieldErrors.newPassword && <span className="field-error">{fieldErrors.newPassword}</span>}
                         </div>
                         <div className="form-group">
                             <label>Current Password (required)</label>
                             <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} required />
+                            {fieldErrors.currentPassword && <span className="field-error">{fieldErrors.currentPassword}</span>}
                         </div>
                         <button type="submit" className="btn-primary" disabled={formLoading}>
                             {formLoading ? 'Saving...' : 'Save Changes'}
                         </button>
                     </form>
+                    <hr className="edit-divider" />
+                    <button className="delete-btn" onClick={handleDelete}>Delete Account</button>
                 </div>
             )}
 
@@ -178,9 +217,9 @@ function Profile() {
             {mySpots.length === 0 ? (
                 <p style={{ textAlign: 'center' }}>You haven't shared any spots yet.</p>
             ) : (
-                <div className="insta-profile-grid">
+                <div className="profile-grid">
                     {mySpots.map((spot) => (
-                        <Link key={spot._id} to={`/spots/${spot._id}`} className="insta-grid-item">
+                        <Link key={spot._id} to={`/spots/${spot._id}`} className="grid-item">
                             <img src={spot.photo_url} alt={spot.name} />
                         </Link>
                     ))}

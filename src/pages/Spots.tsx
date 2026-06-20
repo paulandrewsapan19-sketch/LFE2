@@ -26,6 +26,7 @@ function Spots() {
     const [formPhotoUrl, setFormPhotoUrl] = useState<string>('');
     const [formError, setFormError] = useState<string>('');
     const [formLoading, setFormLoading] = useState<boolean>(false);
+    const [imageError, setImageError] = useState<boolean>(false);
 
     const { token } = useAuth();
 
@@ -69,6 +70,7 @@ function Spots() {
             setFormLocation('');
             setFormDescription('');
             setFormPhotoUrl('');
+            setImageError(false);
             setShowForm(false);
             fetchSpots();
         } catch (err: any) {
@@ -101,13 +103,16 @@ function Spots() {
                             <input
                                 type="url"
                                 value={formPhotoUrl}
-                                onChange={(e) => setFormPhotoUrl(e.target.value)}
+                                onChange={(e) => { setFormPhotoUrl(e.target.value); setImageError(false); }}
                                 placeholder="https://example.com/photo.jpg"
                                 required
                             />
                         </div>
-                        {formPhotoUrl && (
-                            <img src={formPhotoUrl} alt="Preview" className="preview-image" />
+                        {formPhotoUrl && !imageError && (
+                            <img src={formPhotoUrl} alt="Preview" className="preview-image" onError={() => setImageError(true)} />
+                        )}
+                        {formPhotoUrl && imageError && (
+                            <p className="image-error">Image failed to load</p>
                         )}
                         <div className="form-group">
                             <label>Name</label>

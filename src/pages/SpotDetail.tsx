@@ -19,6 +19,14 @@ function SpotDetail() {
     const [spot, setSpot] = useState<Spot | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string>('');
+    const [currentUserId, setCurrentUserId] = useState<string>('');
+    const [editMode, setEditMode] = useState<boolean>(false);
+    const [editName, setEditName] = useState<string>('');
+    const [editLocation, setEditLocation] = useState<string>('');
+    const [editDescription, setEditDescription] = useState<string>('');
+    const [editPhotoUrl, setEditPhotoUrl] = useState<string>('');
+    const [editError, setEditError] = useState<string>('');
+    const [editLoading, setEditLoading] = useState<boolean>(false);
 
     const { token } = useAuth();
 
@@ -37,6 +45,16 @@ function SpotDetail() {
         };
 
         fetchSpot();
+
+        const fetchUser = async () => {
+            try {
+                const res = await axios.get('http://localhost:3000/api/users/me', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setCurrentUserId(res.data._id);
+            } catch {}
+        };
+        if (token) fetchUser();
     }, [id, token]);
 
     const handleDelete = async () => {
@@ -49,6 +67,46 @@ function SpotDetail() {
             navigate('/spots');
         } catch (err: any) {
             alert(err.response?.data?.error || 'Failed to delete spot.');
+        }
+    };
+
+    const getOwnerId = (s: Spot) => {
+        return typeof s.user_id === 'object' && s.user_id !== null
+            ? s.user_id._id
+            : s.user_id;
+    };
+
+    const isOwner = spot ? getOwnerId(spot) === currentUserId : false;
+
+    const startEdit = () => {
+        if (!spot) return;
+        setEditName(spot.name);
+        setEditLocation(spot.location);
+        setEditDescription(spot.description);
+        setEditPhotoUrl(spot.photo_url);
+        setEditError('');
+        setEditMode(true);
+    };
+
+    const handleEdit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setEditError('');
+        setEditLoading(true);
+        try {
+            const response = await axios.put(`http://localhost:3000/api/spots/${id}`, {
+                name: editName,
+                location: editLocation,
+                description: editDescription,
+                photo_url: editPhotoUrl
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setSpot(response.data);
+            setEditMode(false);
+        } catch (err: any) {
+            setEditError(err.response?.data?.error || 'Failed to update spot.');
+        } finally {
+            setEditLoading(false);
         }
     };
 
@@ -81,31 +139,65 @@ function SpotDetail() {
                 <Link to="/spots" className="trip-link">&larr; Back to Feed</Link>
             </div>
 
-            <div className="insta-post" style={{ maxWidth: '470px', margin: '0 auto' }}>
-                <div className="insta-post-header">
-                    <div className="insta-avatar">{getAuthorName(spot).charAt(0).toUpperCase()}</div>
+            <div className="post" style={{ maxWidth: '470px', margin: '0 auto' }}>
+                <div className="post-header">
+                    <div className="avatar">{getAuthorName(spot).charAt(0).toUpperCase()}</div>
                     <div>
-                        <p className="insta-username">{getAuthorName(spot)}</p>
-                        <p className="insta-location">{spot.location}</p>
+                        <p className="username">{getAuthorName(spot)}</p>
+                        <p className="location-text">{spot.location}</p>
                     </div>
                 </div>
 
-                <img src={spot.photo_url} alt={spot.name} className="insta-post-image" />
+                <img src={spot.photo_url} alt={spot.name} className="post-image" />
 
-                <div className="insta-post-body">
-                    <p><span className="insta-username">{getAuthorName(spot)}</span> <strong>{spot.name}</strong></p>
-                    <p>{spot.description}</p>
-                    {spot.createdAt && (
-                        <p style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', marginTop: '0.5rem' }}>
-                            {new Date(spot.createdAt).toDateString()}
-                        </p>
+                <div className="post-body">
+                    {editMode ? (
+                        <div>
+                            {editError && <div className="auth-error">{editError}</div>}
+                            <form onSubmit={handleEdit}>
+                                <div className="form-group">
+                                    <label>Name</label>
+                                    <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} required />
+                                </div>
+                                <div className="form-group">
+                                    <label>Location</label>
+                                    <input type="text" value={editLocation} onChange={(e) => setEditLocation(e.target.value)} required />
+                                </div>
+                                <div className="form-group">
+                                    <label>Caption</label>
+                                    <input type="text" value={editDescription} onChange={(e) => setEditDescription(e.target.value)} required />
+                                </div>
+                                <div className="form-group">
+                                    <label>Image URL</label>
+                                    <input type="url" value={editPhotoUrl} onChange={(e) => setEditPhotoUrl(e.target.value)} required />
+                                </div>
+                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                    <button type="submit" className="btn-primary" disabled={editLoading}>
+                                        {editLoading ? 'Saving...' : 'Save'}
+                                    </button>
+                                    <button type="button" className="btn-outline" onClick={() => setEditMode(false)}>
+                                        Cancel
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    ) : (
+                        <>
+                            <p><span className="username">{getAuthorName(spot)}</span> <strong>{spot.name}</strong></p>
+                            <p>{spot.description}</p>
+                            {spot.createdAt && (
+                                <p style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', marginTop: '0.5rem' }}>
+                                    {new Date(spot.createdAt).toDateString()}
+                                </p>
+                            )}
+                            {isOwner && (
+                                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
+                                    <button className="btn-outline" onClick={startEdit}>Edit</button>
+                                    <button className="delete-btn" onClick={handleDelete}>Delete</button>
+                                </div>
+                            )}
+                        </>
                     )}
-
-                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
-                        <button onClick={handleDelete} className="delete-btn">
-                            Delete
-                        </button>
-                    </div>
                 </div>
             </div>
         </main>

@@ -6,6 +6,7 @@ import Home from './pages/Home';
 import Spots from './pages/Spots';
 import SpotDetail from './pages/SpotDetail';
 import Trips from './pages/Trips';
+import TripDetail from './pages/TripDetail';
 import Profile from './pages/Profile';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -37,6 +38,11 @@ function App() {
                         <Route path="trips" element={
                             <ProtectedRoute>
                                 <Trips />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="trips/:id" element={
+                            <ProtectedRoute>
+                                <TripDetail />
                             </ProtectedRoute>
                         } />
                         <Route path="profile" element={

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 
@@ -6,6 +7,7 @@ interface Spot {
     _id: string;
     name: string;
     location: string;
+    photo_url?: string;
 }
 
 interface Trip {
@@ -263,21 +265,32 @@ function Trips() {
                                 </form>
                             ) : (
                                 <>
-                                    <h2>{trip.title}</h2>
-                                    <p className="trip-meta">
-                                        {trip.spot_id && `Spot: ${trip.spot_id.name} | `}
-                                        {trip.is_public ? 'Public' : 'Private'}
-                                        {trip.start_date && ` | ${trip.start_date.split('T')[0]}`}
-                                        {trip.end_date && ` → ${trip.end_date.split('T')[0]}`}
-                                    </p>
-                                    <p>{trip.description}</p>
-                                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem' }}>
-                                        <button onClick={() => startEdit(trip)} className="btn-outline">
-                                            Edit
-                                        </button>
-                                        <button onClick={() => handleDelete(trip._id)} className="delete-btn">
-                                            Delete
-                                        </button>
+                                    <div className="trip-card-content">
+                                        {trip.spot_id?.photo_url && (
+                                            <Link to={`/trips/${trip._id}`}>
+                                                <img src={trip.spot_id.photo_url} alt={trip.spot_id.name} className="trip-card-thumbnail" />
+                                            </Link>
+                                        )}
+                                        <div>
+                                            <Link to={`/trips/${trip._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                                <h2>{trip.title}</h2>
+                                            </Link>
+                                            <p className="trip-meta">
+                                                {trip.spot_id && `Spot: ${trip.spot_id.name} | `}
+                                                {trip.is_public ? 'Public' : 'Private'}
+                                                {trip.start_date && ` | ${trip.start_date.split('T')[0]}`}
+                                                {trip.end_date && ` → ${trip.end_date.split('T')[0]}`}
+                                            </p>
+                                            <p>{trip.description}</p>
+                                            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem' }}>
+                                                <button onClick={() => startEdit(trip)} className="btn-outline">
+                                                    Edit
+                                                </button>
+                                                <button onClick={() => handleDelete(trip._id)} className="delete-btn">
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </>
                             )}

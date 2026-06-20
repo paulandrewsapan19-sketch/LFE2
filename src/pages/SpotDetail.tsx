@@ -13,6 +13,12 @@ interface Spot {
     createdAt?: string;
 }
 
+interface RelatedTrip {
+    _id: string;
+    title: string;
+    description: string;
+}
+
 function SpotDetail() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
@@ -27,6 +33,8 @@ function SpotDetail() {
     const [editPhotoUrl, setEditPhotoUrl] = useState<string>('');
     const [editError, setEditError] = useState<string>('');
     const [editLoading, setEditLoading] = useState<boolean>(false);
+    const [relatedTrips, setRelatedTrips] = useState<RelatedTrip[]>([]);
+    const [tripsLoading, setTripsLoading] = useState<boolean>(true);
 
     const { token } = useAuth();
 
@@ -55,6 +63,18 @@ function SpotDetail() {
             } catch {}
         };
         if (token) fetchUser();
+
+        const fetchRelatedTrips = async () => {
+            try {
+                const res = await axios.get(`http://localhost:3000/api/trips/spot/${id}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setRelatedTrips(res.data);
+            } catch {} finally {
+                setTripsLoading(false);
+            }
+        };
+        fetchRelatedTrips();
     }, [id, token]);
 
     const handleDelete = async () => {
@@ -199,6 +219,26 @@ function SpotDetail() {
                         </>
                     )}
                 </div>
+            </div>
+
+            <div style={{ maxWidth: '470px', margin: '2rem auto 0' }}>
+                <h3 style={{ textAlign: 'center', marginBottom: '1rem' }}>Trips featuring this spot</h3>
+                {tripsLoading ? (
+                    <p style={{ textAlign: 'center' }}>Loading trips...</p>
+                ) : relatedTrips.length === 0 ? (
+                    <p style={{ textAlign: 'center', color: 'var(--color-text-muted)' }}>
+                        No trips feature this spot yet. Be the first to add it to a trip!
+                    </p>
+                ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                        {relatedTrips.map((trip) => (
+                            <Link key={trip._id} to={`/trips/${trip._id}`} className="related-trip-card">
+                                <h3>{trip.title}</h3>
+                                <p>{trip.description}</p>
+                            </Link>
+                        ))}
+                    </div>
+                )}
             </div>
         </main>
     );

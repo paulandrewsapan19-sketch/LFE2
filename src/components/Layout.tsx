@@ -21,7 +21,9 @@ function Layout() {
                     <div className="header-user">
                         {isLoggedIn ? (
                             <>
-                                <span className="header-username">👤 {userName || 'Roamr User'}</span>
+                                <NavLink to="/profile" className="header-username" style={{ textDecoration: 'none' }}>
+                                    👤 {userName || 'Roamr User'}
+                                </NavLink>
                                 <button onClick={handleLogout} className="header-logout-btn">
                                     Logout
                                 </button>

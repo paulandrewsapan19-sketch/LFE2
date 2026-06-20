@@ -78,13 +78,6 @@ function Spots() {
         }
     };
 
-    const getAuthorName = (spot: Spot) => {
-        if (typeof spot.user_id === 'object' && spot.user_id !== null) {
-            return spot.user_id.username || spot.user_id.name;
-        }
-        return 'roamr_user';
-    };
-
     return (
         <main>
             <section className="page-header">
@@ -99,7 +92,7 @@ function Spots() {
             </div>
 
             {showForm && (
-                <div className="card insta-create-card">
+                <div className="card create-card">
                     <h2>Share a New Spot</h2>
                     {formError && <div className="auth-error">{formError}</div>}
                     <form onSubmit={handleCreate}>
@@ -114,7 +107,7 @@ function Spots() {
                             />
                         </div>
                         {formPhotoUrl && (
-                            <img src={formPhotoUrl} alt="Preview" className="insta-preview" />
+                            <img src={formPhotoUrl} alt="Preview" className="preview-image" />
                         )}
                         <div className="form-group">
                             <label>Name</label>
@@ -138,31 +131,19 @@ function Spots() {
             {loading && <p style={{ textAlign: 'center' }}>Loading feed...</p>}
             {error && <p style={{ textAlign: 'center', color: 'red' }}>{error}</p>}
 
-            {/* Instagram-style single column feed */}
-            <div className="insta-feed">
+            {/* Grid feed */}
+            <div className="spots-feed-grid">
                 {!loading && spots.length === 0 ? (
-                    <p style={{ textAlign: 'center' }}>No spots yet. Be the first to share one!</p>
+                    <p style={{ textAlign: 'center', gridColumn: '1 / -1' }}>No spots yet. Be the first to share one!</p>
                 ) : (
                     spots.map((spot) => (
-                        <div key={spot._id} className="insta-post">
-                            <div className="insta-post-header">
-                                <div className="insta-avatar">{getAuthorName(spot).charAt(0).toUpperCase()}</div>
-                                <div>
-                                    <p className="insta-username">{getAuthorName(spot)}</p>
-                                    <p className="insta-location">{spot.location}</p>
-                                </div>
+                        <Link key={spot._id} to={`/spots/${spot._id}`} className="spots-feed-grid-item">
+                            <img src={spot.photo_url} alt={spot.name} />
+                            <div className="spot-overlay">
+                                <p>{spot.name}</p>
+                                <p className="spot-overlay-location">{spot.location}</p>
                             </div>
-
-                            <Link to={`/spots/${spot._id}`}>
-                                <img src={spot.photo_url} alt={spot.name} className="insta-post-image" />
-                            </Link>
-
-                            <div className="insta-post-body">
-                                <p><span className="insta-username">{getAuthorName(spot)}</span> <strong>{spot.name}</strong></p>
-                                <p>{spot.description}</p>
-                                <Link to={`/spots/${spot._id}`} className="insta-view-link">View details</Link>
-                            </div>
-                        </div>
+                        </Link>
                     ))
                 )}
             </div>

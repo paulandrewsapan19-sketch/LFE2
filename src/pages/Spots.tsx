@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
+import ProfileCard from '../components/ProfileCard';
+import RightSidebar from '../components/RightSidebar';
 
 interface Spot {
     _id: string;
@@ -17,6 +19,8 @@ function Spots() {
     const [spots, setSpots] = useState<Spot[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string>('');
+    const [searchParams, setSearchParams] = useSearchParams();
+    const locationFilter = searchParams.get('location') || '';
 
     // Create form state
     const [showForm, setShowForm] = useState<boolean>(false);
@@ -30,9 +34,22 @@ function Spots() {
 
     const { token } = useAuth();
 
+    const updateLocationFilter = (tag: string) => {
+        if (tag) {
+            setSearchParams({ location: tag });
+        } else {
+            setSearchParams({});
+        }
+    };
+
     const fetchSpots = async () => {
         try {
+            const params: Record<string, string> = {};
+            if (locationFilter) {
+                params.location = locationFilter;
+            }
             const response = await axios.get('http://localhost:3000/api/spots', {
+                params,
                 headers: { Authorization: `Bearer ${token}` }
             });
             // Newest first - Instagram style feed
@@ -49,7 +66,7 @@ function Spots() {
 
     useEffect(() => {
         fetchSpots();
-    }, [token]);
+    }, [token, locationFilter]);
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -119,8 +136,11 @@ function Spots() {
                             <input type="text" value={formName} onChange={(e) => setFormName(e.target.value)} placeholder="Spot name" required />
                         </div>
                         <div className="form-group">
-                            <label>Location</label>
-                            <input type="text" value={formLocation} onChange={(e) => setFormLocation(e.target.value)} placeholder="City, Country" required />
+                            <label>Location Tag</label>
+                            <input type="text" value={formLocation} onChange={(e) => setFormLocation(e.target.value)} placeholder="e.g. Lanikai Beach, Hawaii" required />
+                            <span style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', marginTop: '0.25rem' }}>
+                                Use a consistent name so others can tag the same place.
+                            </span>
                         </div>
                         <div className="form-group">
                             <label>Caption</label>
@@ -133,24 +153,56 @@ function Spots() {
                 </div>
             )}
 
-            {loading && <p style={{ textAlign: 'center' }}>Loading feed...</p>}
-            {error && <p style={{ textAlign: 'center', color: 'red' }}>{error}</p>}
+            <div className="three-column-layout">
+                <aside className="sidebar-left">
+                    <ProfileCard />
+                </aside>
 
-            {/* Grid feed */}
-            <div className="spots-feed-grid">
-                {!loading && spots.length === 0 ? (
-                    <p style={{ textAlign: 'center', gridColumn: '1 / -1' }}>No spots yet. Be the first to share one!</p>
-                ) : (
-                    spots.map((spot) => (
-                        <Link key={spot._id} to={`/spots/${spot._id}`} className="spots-feed-grid-item">
-                            <img src={spot.photo_url} alt={spot.name} />
-                            <div className="spot-overlay">
-                                <p>{spot.name}</p>
-                                <p className="spot-overlay-location">{spot.location}</p>
-                            </div>
-                        </Link>
-                    ))
-                )}
+                <div className="main-content">
+                    {loading && <p style={{ textAlign: 'center' }}>Loading feed...</p>}
+                    {error && <p style={{ textAlign: 'center', color: 'red' }}>{error}</p>}
+
+                    {locationFilter && (
+                        <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+                            <span style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>
+                                Filtered by: <strong style={{ color: 'var(--color-primary)' }}>{locationFilter}</strong>
+                            </span>
+                            {' '}
+                            <button onClick={() => updateLocationFilter('')} style={{ background: 'none', border: 'none', color: 'var(--color-accent)', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem' }}>
+                                Clear
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Grid feed */}
+                    <div className="spots-feed-grid">
+                        {!loading && spots.length === 0 ? (
+                            <p style={{ textAlign: 'center', gridColumn: '1 / -1' }}>No spots yet. Be the first to share one!</p>
+                        ) : (
+                            spots.map((spot) => (
+                                <div key={spot._id} className="spots-feed-grid-item" style={{ position: 'relative' }}>
+                                    <Link to={`/spots/${spot._id}`} style={{ display: 'block', width: '100%', height: '100%' }}>
+                                        <img src={spot.photo_url} alt={spot.name} />
+                                        <div className="spot-overlay">
+                                            <p>{spot.name}</p>
+                                            <p className="spot-overlay-location">{spot.location}</p>
+                                        </div>
+                                    </Link>
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); updateLocationFilter(spot.location); }}
+                                        className="location-tag-btn"
+                                    >
+                                        {spot.location}
+                                    </button>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+
+                <aside className="sidebar-right">
+                    <RightSidebar />
+                </aside>
             </div>
         </main>
     );
